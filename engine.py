@@ -69,6 +69,7 @@ class ZMQProcess:
             ip = str(ipaddress.ip_address(str(addr)))
         except:
             debug.PrintError("Failed parsing ip addr from [%s], falling back to %s" % (addr, ip))
+            bpy.context.scene.vray.Exporter.zmq_address = ip
 
         self._heartbeat_running = _vray_for_blender_rt.zmq_heartbeat_start("tcp://%s:%s" % (ip, port))
         debug.Debug('ZMQ starting heartbeat = %s' % self._heartbeat_running)
@@ -118,7 +119,10 @@ class ZMQProcess:
 
     def start(self):
         if not self.is_running():
-            self._check_process()
+            if not self.is_local():
+                self.check_heartbeat()
+            else:
+                self._check_process()
 
     def stop(self):
         if self.is_running():
